@@ -1,4 +1,7 @@
 from flask import Flask, request, redirect, render_template
+from models import db,Employee
+app=Flask(__name__)
+
 # """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 # ☛ Req -4 : Import db, Employee from models.py module
 # """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -10,7 +13,7 @@ from flask import Flask, request, redirect, render_template
 # """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 # ☛ Req -6 : Create database name called employee_project.db
 # """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///<db_name>'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///employee_project.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # binding the instance to a specific Flask application
@@ -26,13 +29,14 @@ def create_table():
 # """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 # ☛ Req -7 : Create a method/function called landing_page() which should return a string 'You have landed EEE project-2022'
 # """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-def hello_world():  # put application's code here
-    return 'Hello World!'
+def landing_page():  # put application's code here
+    return 'You have landed EEE project-2022!'
 
 
 @app.route('/data/create', methods=['GET', 'POST'])
 def create():
     if request.method == 'GET':
+        return render_template('createpage.html')
         # """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
         # ☛ Req -8 : Above if condition should render a template file called createpage.html
         # """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -45,12 +49,14 @@ def create():
         employee = Employee(employee_id=employee_id, name=name, age=age, position=position)
         db.session.add(employee)
         db.session.commit()
+        return redirect('/data')
         # """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
         # ☛ Req -9 : Above if condition should redirect to URI '/data'
         # """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 @app.route('/data')
 def get_all_employees():
+    employees = Employee.query.all()
     # """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
     # ☛ Req -10 : Fetch/Query all the rows and assign it to a variable called "employees"
     # """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -62,7 +68,7 @@ def get_employee(id):
     employee = Employee.query.filter_by(employee_id=id).first()
     if employee:
         return render_template('data.html', employee=employee)
-    return <text_will_go_here>
+    return f"Submitted id 123 is not found in employee database"
     # """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
     # ☛ Req -11 : if given employee id was not found it should return a text called "Submitted id 123 is not found in employee database
     # """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -91,6 +97,9 @@ def delete(id):
     employee = Employee.query.filter_by(employee_id=id).first()
     if request.method == 'POST':
         if employee:
+            db.session.delete(employee)
+            db.session.commit()
+
             # """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
             # ☛ Req -11 : Ensure given record (1) get deleted and (2) Committed
             # """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -100,6 +109,7 @@ def delete(id):
 
 
 if __name__ == '__main__':
+    app.run(debug=True)
     # """""""""""""""""""""""""""""""""""
     # ☛ Req -12 : Run app in debug mode
     # """""""""""""""""""""""""""""""""""
